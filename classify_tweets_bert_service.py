@@ -2,8 +2,8 @@ import torch
 from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler
 from keras.preprocessing.sequence import pad_sequences
 from sklearn.model_selection import train_test_split
-from pytorch_pretrained_bert import BertTokenizer, BertConfig, BertModel
-from pytorch_pretrained_bert import BertAdam, BertForSequenceClassification
+# from pytorch_pretrained_bert import BertTokenizer, BertConfig, BertModel
+# from pytorch_pretrained_bert import BertAdam, BertForSequenceClassification
 from tqdm import tqdm, trange
 import pandas as pd
 import io
@@ -92,9 +92,9 @@ else:
 	train_nepal, val_nepal, test_nepal = create_train_test_data(italy_dict)
 
 # Reduce size of data
-train_nepal = train_nepal[:10]
-val_nepal = val_nepal[:10]
-test_nepal = test_nepal[:10]
+# train_nepal = train_nepal[:10]
+# val_nepal = val_nepal[:10]
+# test_nepal = test_nepal[:10]
 
 train_nepal_sentences = ["[CLS] "+ text[0]+ " [SEP]" for text in train_nepal]
 val_nepal_sentences   = ["[CLS] "+ text[0]+ " [SEP]" for text in val_nepal]
@@ -103,11 +103,11 @@ test_nepal_sentences  = ["[CLS] "+ text[0]+ " [SEP]" for text in test_nepal]
 # val_italy_sentences   = ["[CLS] "+ text[0]+ " [SEP]" for text in val_italy]
 # test_italy_sentences  = ["[CLS] "+ text[0]+ " [SEP]" for text in test_italy]
 
-tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True)
+# tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True)
 
-tokenized_nepal_train = [tokenizer.tokenize(sent) for sent in train_nepal_sentences]
-tokenized_nepal_val   = [tokenizer.tokenize(sent) for sent in val_nepal_sentences]
-tokenized_nepal_test  = [tokenizer.tokenize(sent) for sent in test_nepal_sentences]
+# tokenized_nepal_train = [tokenizer.tokenize(sent) for sent in train_nepal_sentences]
+# tokenized_nepal_val   = [tokenizer.tokenize(sent) for sent in val_nepal_sentences]
+# tokenized_nepal_test  = [tokenizer.tokenize(sent) for sent in test_nepal_sentences]
 
 # tokenized_italy_train = [tokenizer.tokenize(sent) for sent in train_italy_sentences]
 # tokenized_italy_val   = [tokenizer.tokenize(sent) for sent in val_nepal_sentences]
@@ -182,7 +182,7 @@ class BertSentClassifier(torch.nn.Module):
 		return F.log_softmax(logits, dim=1)
 
 
-config = {'hidden_dropout_prob':0.3, 'num_labels':3,'model_name':'bert-base-uncased', 'hidden_size':768, 'data_dir':'/data/Gab_data/NARMADA_BERT/',}
+config = {'hidden_dropout_prob':0.3, 'num_labels':3,'model_name':'bert-base-uncased', 'hidden_size':768, 'data_dir':'saved_models/',}
 config = SimpleNamespace(**config)
 
 # model = BertModel.from_pretrained('bert-base-uncased')
@@ -203,14 +203,12 @@ optimizer_grouped_parameters = [
 	 'weight_decay_rate': 0.0}
 ]
 
-optimizer = BertAdam(optimizer_grouped_parameters,
-					 lr=2e-5,
-					 warmup=.1)
+optimizer = torch.optim.Adam(optimizer_grouped_parameters, lr=2e-5)
 
 
 from sklearn.metrics import classification_report, f1_score
 
-epochs = 10
+epochs = 100
 
 BATCH_SIZE = 4
 
@@ -220,13 +218,13 @@ test_nepal_dataloader = DataLoader(test_nepal_data, shuffle = False, batch_size=
 
 best_val=0
 
-for epoch in range(epochs):
+for epoch in tqdm(range(epochs)):
 	model.train()
 	print(epoch)
 	
 	tr_loss=0
 	batch_num=0
-	for step, batch in tqdm(enumerate(train_nepal_dataloader)):
+	for step, batch in enumerate(train_nepal_dataloader):
 		print("Done for batch = {}".format(step), end='\r')
 		b_ids, b_mask, b_labels = batch
 		b_sent = train_nepal_sentences[(step * BATCH_SIZE) : (step * BATCH_SIZE) + BATCH_SIZE]
