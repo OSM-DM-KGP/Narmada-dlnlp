@@ -208,7 +208,7 @@ optimizer = torch.optim.Adam(optimizer_grouped_parameters, lr=2e-5)
 
 from sklearn.metrics import classification_report, f1_score
 
-epochs = 100
+epochs = 150
 
 BATCH_SIZE = 4
 
@@ -271,11 +271,11 @@ for epoch in tqdm(range(epochs)):
 	f1= f1_score(y_true, y_pred, average='macro')
 	if f1> best_val:
 		best_val= f1
-		model_path = '{}/{}.pt'.format(config.data_dir, dataset)
+		model_path = '{}/{}_bert_service.pth'.format(config.data_dir, dataset)
 		torch.save(model, model_path)
 
 
-model_path = '{}/{}.pt'.format(config.data_dir, dataset)
+model_path = '{}/{}_bert_service.pth'.format(config.data_dir, dataset)
 model = torch.load(model_path, map_location='cpu')
 
 model = model
