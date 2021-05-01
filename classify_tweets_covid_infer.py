@@ -1,3 +1,5 @@
+SENTENCES = ["I need oxygen", "I have oxygen"]
+
 import torch
 from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler
 # from keras.preprocessing.sequence import pad_sequences
@@ -98,9 +100,9 @@ else:
 # val_nepal = val_nepal[:10]
 # test_nepal = test_nepal[:10]
 
-train_nepal_sentences = ["[CLS] "+ text[0]+ " [SEP]" for text in train_nepal]
-val_nepal_sentences   = ["[CLS] "+ text[0]+ " [SEP]" for text in val_nepal]
-test_nepal_sentences  = ["[CLS] "+ text[0]+ " [SEP]" for text in test_nepal]
+# train_nepal_sentences = ["[CLS] "+ text[0]+ " [SEP]" for text in train_nepal]
+# val_nepal_sentences   = ["[CLS] "+ text[0]+ " [SEP]" for text in val_nepal]
+test_nepal_sentences  = ["[CLS] "+ text+ " [SEP]" for text in SENTENCES]
 # train_italy_sentences = ["[CLS] "+ text[0]+ " [SEP]" for text in train_italy]
 # val_italy_sentences   = ["[CLS] "+ text[0]+ " [SEP]" for text in val_italy]
 # test_italy_sentences  = ["[CLS] "+ text[0]+ " [SEP]" for text in test_italy]
@@ -115,9 +117,9 @@ test_nepal_sentences  = ["[CLS] "+ text[0]+ " [SEP]" for text in test_nepal]
 # tokenized_italy_val   = [tokenizer.tokenize(sent) for sent in val_nepal_sentences]
 # tokenized_italy_test  = [tokenizer.tokenize(sent) for sent in test_italy_sentences]
 
-train_nepal_labels    = [elem[1] for elem in train_nepal]
-val_nepal_labels      = [elem[1] for elem in val_nepal]
-test_nepal_labels     = [elem[1] for elem in test_nepal]
+# train_nepal_labels    = [elem[1] for elem in train_nepal]
+# val_nepal_labels      = [elem[1] for elem in val_nepal]
+# test_nepal_labels     = [elem[1] for elem in test_nepal]
 # train_italy_labels    = [elem[1] for elem in train_italy]
 # val_italy_labels      = [elem[1] for elem in val_italy]
 # test_italy_labels     = [elem[1] for elem in test_italy]
@@ -127,8 +129,8 @@ tokenizer = AutoTokenizer.from_pretrained('bert-base-cased', use_fast=True)
 
 MAX_LEN = 64
 # pu.db
-train_nepal_ids = tokenizer(train_nepal_sentences, padding="max_length", truncation=True, max_length=MAX_LEN)["input_ids"]
-val_nepal_ids   = tokenizer(val_nepal_sentences, padding="max_length", truncation=True, max_length=MAX_LEN)["input_ids"]
+# train_nepal_ids = tokenizer(train_nepal_sentences, padding="max_length", truncation=True, max_length=MAX_LEN)["input_ids"]
+# val_nepal_ids   = tokenizer(val_nepal_sentences, padding="max_length", truncation=True, max_length=MAX_LEN)["input_ids"]
 test_nepal_ids  = tokenizer(test_nepal_sentences, padding="max_length", truncation=True, max_length=MAX_LEN)["input_ids"]
 
 
@@ -136,38 +138,40 @@ test_nepal_ids  = tokenizer(test_nepal_sentences, padding="max_length", truncati
 # val_nepal_ids   = pad_sequences([tokenizer.convert_tokens_to_ids(txt) for txt in tokenized_nepal_val], maxlen=MAX_LEN, dtype="long", truncating="post", padding="post")
 # test_nepal_ids  = pad_sequences([tokenizer.convert_tokens_to_ids(txt) for txt in tokenized_nepal_test], maxlen=MAX_LEN, dtype="long", truncating="post", padding="post")
 
-train_nepal_masks = []
-val_nepal_masks   = []
+# train_nepal_masks = []
+# val_nepal_masks   = []
 test_nepal_masks  = []
 
-for seq in train_nepal_ids:
-	seq_mask = [float(i>0) for i in seq]
-	train_nepal_masks.append(seq_mask)
+# for seq in train_nepal_ids:
+# 	seq_mask = [float(i>0) for i in seq]
+# 	train_nepal_masks.append(seq_mask)
 	
-for seq in val_nepal_ids:
-	seq_mask = [float(i>0) for i in seq]
-	val_nepal_masks.append(seq_mask)
+# for seq in val_nepal_ids:
+# 	seq_mask = [float(i>0) for i in seq]
+# 	val_nepal_masks.append(seq_mask)
 
 for seq in test_nepal_ids:
 	seq_mask = [float(i>0) for i in seq]
 	test_nepal_masks.append(seq_mask)
 
 # pu.db
-train_nepal_ids    =  torch.FloatTensor(train_nepal_ids)
-val_nepal_ids      =  torch.FloatTensor(val_nepal_ids)
+# train_nepal_ids    =  torch.FloatTensor(train_nepal_ids)
+# val_nepal_ids      =  torch.FloatTensor(val_nepal_ids)
 test_nepal_ids     =  torch.FloatTensor(test_nepal_ids)
 
-train_nepal_masks  =  torch.LongTensor(train_nepal_masks)
-val_nepal_masks    =  torch.LongTensor(val_nepal_masks)
+# train_nepal_masks  =  torch.LongTensor(train_nepal_masks)
+# val_nepal_masks    =  torch.LongTensor(val_nepal_masks)
 test_nepal_masks   =  torch.LongTensor(test_nepal_masks)
 
-train_nepal_labels = torch.LongTensor(train_nepal_labels)
-val_nepal_labels   = torch.LongTensor(val_nepal_labels)
+# train_nepal_labels = torch.LongTensor(train_nepal_labels)
+# val_nepal_labels   = torch.LongTensor(val_nepal_labels)
+# pu.db
+test_nepal_labels = [0 for x in range(len(test_nepal_ids))]
 test_nepal_labels  = torch.LongTensor(test_nepal_labels)
 
 # pu.db
-train_nepal_data   = TensorDataset(train_nepal_ids, train_nepal_masks, train_nepal_labels)
-val_nepal_data     = TensorDataset(val_nepal_ids, val_nepal_masks, val_nepal_labels)
+# train_nepal_data   = TensorDataset(train_nepal_ids, train_nepal_masks, train_nepal_labels)
+# val_nepal_data     = TensorDataset(val_nepal_ids, val_nepal_masks, val_nepal_labels)
 test_nepal_data    = TensorDataset(test_nepal_ids, test_nepal_masks, test_nepal_labels)
 
 
@@ -209,7 +213,7 @@ config = {'hidden_dropout_prob':0.3, 'num_labels':3,'model_name':'bert-base-unca
 config = SimpleNamespace(**config)
 
 # model = BertModel.from_pretrained('bert-base-uncased')
-sent_bert = BertModel.from_pretrained(config.model_name)
+# sent_bert = BertModel.from_pretrained(config.model_name)
 model = BertSentClassifier(config)
 print("Loading Done")
 
@@ -233,101 +237,113 @@ from sklearn.metrics import classification_report, f1_score
 
 epochs = 150
 
-BATCH_SIZE = 18*112*4
+BATCH_SIZE = 1
 
-train_nepal_dataloader = DataLoader(train_nepal_data, shuffle = True, batch_size= BATCH_SIZE)
-val_nepal_dataloader = DataLoader(val_nepal_data, shuffle = False, batch_size= BATCH_SIZE)
+# train_nepal_dataloader = DataLoader(train_nepal_data, shuffle = True, batch_size= BATCH_SIZE)
+# val_nepal_dataloader = DataLoader(val_nepal_data, shuffle = False, batch_size= BATCH_SIZE)
 test_nepal_dataloader = DataLoader(test_nepal_data, shuffle = False, batch_size= BATCH_SIZE)
 
 best_val=0
 # pu.db
 model_path = '{}/{}_covid.pth'.format(config.data_dir, dataset)
-model = nn.DataParallel(model)
-model.cuda()
-for epoch in tqdm(range(epochs)):
-	model.train()
-	print(epoch)
+model.cpu()
+# for epoch in tqdm(range(epochs)):
+# 	model.train()
+# 	print(epoch)
 	
-	tr_loss=0
-	batch_num=0
-	for step, batch in enumerate(train_nepal_dataloader):
-		print("Done for batch = {}/{}".format(step,len(train_nepal_dataloader)), end='\r')
-		b_ids, b_mask, b_labels = batch
-		b_sent = train_nepal_sentences[(step * BATCH_SIZE) : (step * BATCH_SIZE) + BATCH_SIZE]
-		# pu.db
-		b_ids= b_ids.cuda()
-		b_mask = b_mask.cuda()
-		b_labels = b_labels.cuda()      
-		# weights  = torch.Tensor([0.004461883549047657, 0.557096078912092, 0.4384420375388603])
-		# weights = torch.Tensor([0.01,0.55,0.44])
+# 	tr_loss=0
+# 	batch_num=0
+# 	for step, batch in enumerate(train_nepal_dataloader):
+# 		print("Done for batch = {}/{}".format(step,len(train_nepal_dataloader)), end='\r')
+# 		b_ids, b_mask, b_labels = batch
+# 		b_sent = train_nepal_sentences[(step * BATCH_SIZE) : (step * BATCH_SIZE) + BATCH_SIZE]
+# 		# pu.db
+# 		b_ids= b_ids.cuda()
+# 		b_mask = b_mask.cuda()
+# 		b_labels = b_labels.cuda()      
+# 		# weights  = torch.Tensor([0.004461883549047657, 0.557096078912092, 0.4384420375388603])
+# 		# weights = torch.Tensor([0.01,0.55,0.44])
 
-		optimizer.zero_grad()
-		logits = model(b_ids, attention_mask=b_mask)
-		# import pdb
-		# pdb.set_trace()
-		# pu.db
-		loss   = F.nll_loss(logits, b_labels.view(-1), reduction='sum')
-		loss /= b_labels.view(-1).shape[0]
-		loss.backward()
-		optimizer.step()
+# 		optimizer.zero_grad()
+# 		logits = model(b_ids, attention_mask=b_mask)
+# 		# import pdb
+# 		# pdb.set_trace()
+# 		# pu.db
+# 		loss   = F.nll_loss(logits, b_labels.view(-1), reduction='sum')
+# 		loss /= b_labels.view(-1).shape[0]
+# 		loss.backward()
+# 		optimizer.step()
 		
-		tr_loss += loss.item()
-		batch_num+=1
-	print("Train loss {}".format(tr_loss/batch_num))
-	# torch.save(model, model_path)
+# 		tr_loss += loss.item()
+# 		batch_num+=1
+# 	print("Train loss {}".format(tr_loss/batch_num))
+# 	# torch.save(model, model_path)
 	
-# pu.db
-# model.load_state_dict(torch.load(model_path))
+# # pu.db
+# # model.load_state_dict(torch.load(model_path))
 
-model.eval()
+# model.eval()
 
-y_true=[]
-y_pred=[]
+# y_true=[]
+# y_pred=[]
 
-for step, batch in enumerate(val_nepal_dataloader):
-    b_ids, b_mask, b_labels = batch
-    b_ids= b_ids
-    b_mask = b_mask
-    with torch.no_grad():
-        output_here = sent_bert(b_ids.long(), None, b_mask).last_hidden_state
-        logits = model(output_here, attention_mask=b_mask)
-        logits = logits.detach().cpu().numpy()
-        preds  = np.argmax(logits, axis=1).flatten()
-        b_labels = b_labels.flatten()
-        y_true.extend(b_labels)
-        y_pred.extend(preds)
+# for step, batch in enumerate(val_nepal_dataloader):
+#     b_ids, b_mask, b_labels = batch
+#     b_ids= b_ids
+#     b_mask = b_mask
+#     with torch.no_grad():
+#         output_here = sent_bert(b_ids.long(), None, b_mask).last_hidden_state
+#         logits = model(output_here, attention_mask=b_mask)
+#         logits = logits.detach().cpu().numpy()
+#         preds  = np.argmax(logits, axis=1).flatten()
+#         b_labels = b_labels.flatten()
+#         y_true.extend(b_labels)
+#         y_pred.extend(preds)
         
 
-print(classification_report(y_true, y_pred))
-f1= f1_score(y_true, y_pred, average='macro')
-if f1> best_val:
-    best_val= f1
-    model_path = '{}/{}_bert_covid.pth'.format(config.data_dir, dataset)
-    torch.save(model, model_path)
-    print("Saved at val")
+# print(classification_report(y_true, y_pred))
+# f1= f1_score(y_true, y_pred, average='macro')
+# if f1> best_val:
+#     best_val= f1
+#     model_path = '{}/{}_bert_covid.pth'.format(config.data_dir, dataset)
+#     torch.save(model, model_path)
+#     print("Saved at val")
 
 
 # model_path = '{}/{}_bert_service.pth'.format(config.data_dir, dataset)
 # pu.db
-# model = torch.load(model_path, map_location='cpu')
-
+model = torch.load(model_path, map_location='cpu')
+model.cpu()
+model.eval()
 # model = model
 
-# y_true=[]
-# y_pred=[]
-# for step, batch in enumerate(test_nepal_dataloader):
-# 	b_ids, b_mask, b_labels = batch
-# 	b_ids= b_ids
-# 	b_mask = b_mask
-# 	with torch.no_grad():
-# 		logits = model(b_ids, attention_mask=b_mask)
-# 		logits = logits.detach().cpu().numpy()
-# 		preds  = np.argmax(logits, axis=1).flatten()
-# 		b_labels = b_labels.flatten()
-# 		y_true.extend(b_labels)
-# 		y_pred.extend(preds)
-		
+y_true=[]
+y_pred=[]
+for step, batch in enumerate(test_nepal_dataloader):
+	b_ids, b_mask, b_labels = batch
+	b_ids= b_ids
+	b_mask = b_mask
+	with torch.no_grad():
+		# pu.db
+		logits = model.module(b_ids.cpu(), attention_mask=b_mask.cpu())
+		logits = logits.detach().cpu().numpy()
+		preds  = np.argmax(logits, axis=1).flatten()
+		# b_labels = b_labels.flatten()
+		# y_true.extend(b_labels)
+		y_pred.extend(preds)
+
+# pu.db
 # print(classification_report(y_true, y_pred))
+print("\n")
+for i, sent in enumerate(SENTENCES):
+	print(sent, end="")
+	label = y_pred[i]
+	if label == 0:
+		print(": NEED")
+	elif label == 1:
+		print(": AVAIL")
+	else:
+		print(": OTHER")
 
 
 
