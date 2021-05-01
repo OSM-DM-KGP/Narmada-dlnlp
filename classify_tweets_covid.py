@@ -274,7 +274,8 @@ for epoch in tqdm(range(epochs)):
 		tr_loss += loss.item()
 		batch_num+=1
 	print("Train loss {}".format(tr_loss/batch_num))
-	# torch.save(model, model_path)
+	# break
+torch.save(model, model_path)
 	
 # pu.db
 # model.load_state_dict(torch.load(model_path))
@@ -289,8 +290,8 @@ for step, batch in enumerate(val_nepal_dataloader):
     b_ids= b_ids
     b_mask = b_mask
     with torch.no_grad():
-        output_here = sent_bert(b_ids.long(), None, b_mask).last_hidden_state
-        logits = model(output_here, attention_mask=b_mask)
+        # output_here = sent_bert(b_ids.long(), None, b_mask).last_hidden_state
+        logits = model(b_ids.long(), attention_mask=b_mask)
         logits = logits.detach().cpu().numpy()
         preds  = np.argmax(logits, axis=1).flatten()
         b_labels = b_labels.flatten()
