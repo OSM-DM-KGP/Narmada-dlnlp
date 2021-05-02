@@ -1,4 +1,4 @@
-SENTENCES = ["I need oxygen", "I have oxygen"]
+SENTENCES = ["I need water", "I have oxygen", "An elderly relative is covid+ is badly in need of a bed. His oxygen levels are dropping. Please can someone help. Please spead the word.", "Hospital in #Ambala  Have oxygen beds. Verified at 12:43AM, 24th April, 2021 Gyansagar Medical hospital and college - 9910223322 #CovidResources #IndiaFightsCorona"]
 
 import torch
 from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler
@@ -182,8 +182,8 @@ class BertSentClassifier(torch.nn.Module):
 		super(BertSentClassifier, self).__init__()
 		self.num_labels = config.num_labels
 		self.bert = BertModel.from_pretrained(config.model_name)
-		for param in self.bert.base_model.parameters():
-			param.requires_grad = False
+		# for param in self.bert.base_model.parameters():
+		# 	param.requires_grad = False
 		self.dropout = torch.nn.Dropout(config.hidden_dropout_prob)
 		self.classifier = torch.nn.Linear(config.hidden_size, config.num_labels)
 
@@ -194,6 +194,12 @@ class BertSentClassifier(torch.nn.Module):
 		logits = self.classifier(output_here[:,0,:])
 		return F.log_softmax(logits, dim=1)
 
+class WrappedModel(nn.Module):
+	def __init__(self, module):
+		super(WrappedModel, self).__init__()
+		self.module = module # that I actually define.
+	def forward(self, x):
+		return self.module(x)
 # class BertSentClassifier(torch.nn.Module):
 
 # 	def __init__(self, config):
@@ -245,8 +251,8 @@ test_nepal_dataloader = DataLoader(test_nepal_data, shuffle = False, batch_size=
 
 best_val=0
 # pu.db
-model_path = '{}/{}_covid.pth'.format(config.data_dir, dataset)
-model.cpu()
+model_path = '{}/{}_bert_covid.pth'.format(config.data_dir, dataset)
+# model.cpu()
 # for epoch in tqdm(range(epochs)):
 # 	model.train()
 # 	print(epoch)
@@ -312,7 +318,9 @@ model.cpu()
 
 # model_path = '{}/{}_bert_service.pth'.format(config.data_dir, dataset)
 # pu.db
-model = torch.load(model_path, map_location='cpu')
+model = WrappedModel(model)
+state_dict = torch.load(model_path)
+model.load_state_dict(state_dict)
 model.cpu()
 model.eval()
 # model = model
@@ -339,11 +347,11 @@ for i, sent in enumerate(SENTENCES):
 	print(sent, end="")
 	label = y_pred[i]
 	if label == 0:
-		print(": NEED")
-	elif label == 1:
-		print(": AVAIL")
-	else:
 		print(": OTHER")
+	elif label == 1:
+		print(": NEED")
+	else:
+		print(": AVAIL")
 
 
 

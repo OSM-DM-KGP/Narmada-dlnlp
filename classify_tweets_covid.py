@@ -121,7 +121,7 @@ test_nepal_labels     = [elem[1] for elem in test_nepal]
 # train_italy_labels    = [elem[1] for elem in train_italy]
 # val_italy_labels      = [elem[1] for elem in val_italy]
 # test_italy_labels     = [elem[1] for elem in test_italy]
-
+# pu.db
 from transformers import AutoTokenizer
 tokenizer = AutoTokenizer.from_pretrained('bert-base-cased', use_fast=True) 
 
@@ -178,8 +178,8 @@ class BertSentClassifier(torch.nn.Module):
 		super(BertSentClassifier, self).__init__()
 		self.num_labels = config.num_labels
 		self.bert = BertModel.from_pretrained(config.model_name)
-		for param in self.bert.base_model.parameters():
-			param.requires_grad = False
+		# for param in self.bert.base_model.parameters():
+		# 	param.requires_grad = False
 		self.dropout = torch.nn.Dropout(config.hidden_dropout_prob)
 		self.classifier = torch.nn.Linear(config.hidden_size, config.num_labels)
 
@@ -231,9 +231,9 @@ optimizer = torch.optim.Adam(optimizer_grouped_parameters, lr=2e-5)
 
 from sklearn.metrics import classification_report, f1_score
 
-epochs = 150
+epochs = 50
 
-BATCH_SIZE = 18*112*4
+BATCH_SIZE = 108*4
 
 train_nepal_dataloader = DataLoader(train_nepal_data, shuffle = True, batch_size= BATCH_SIZE)
 val_nepal_dataloader = DataLoader(val_nepal_data, shuffle = False, batch_size= BATCH_SIZE)
@@ -241,7 +241,7 @@ test_nepal_dataloader = DataLoader(test_nepal_data, shuffle = False, batch_size=
 
 best_val=0
 # pu.db
-model_path = '{}/{}_covid.pth'.format(config.data_dir, dataset)
+model_path = '{}/{}_bert_covid.pth'.format(config.data_dir, dataset)
 model = nn.DataParallel(model)
 model.cuda()
 for epoch in tqdm(range(epochs)):
@@ -273,9 +273,12 @@ for epoch in tqdm(range(epochs)):
 		
 		tr_loss += loss.item()
 		batch_num+=1
+		if step == 0:
+			torch.save(model.state_dict(), model_path)
+			
 	print("Train loss {}".format(tr_loss/batch_num))
 	# break
-torch.save(model, model_path)
+torch.save(model.state_dict(), model_path)
 	
 # pu.db
 # model.load_state_dict(torch.load(model_path))
@@ -304,7 +307,7 @@ f1= f1_score(y_true, y_pred, average='macro')
 if f1> best_val:
     best_val= f1
     model_path = '{}/{}_bert_covid.pth'.format(config.data_dir, dataset)
-    torch.save(model, model_path)
+    torch.save(model.state_dict(), model_path)
     print("Saved at val")
 
 
